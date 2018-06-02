@@ -1,12 +1,18 @@
-* This is a fork of [[http://www.emacswiki.org/emacs/download/fic-ext-mode.el][fic-ext-mod.el]]
+* This is a fork of [[https://github.com/lewang/fic-mode][fic-mode]]
 
-I've decided to rename it back to the canonical fic-mode.el.
+* How to use it?
+  Just add it to load path in your ~/.emacs.d/init.el after downloading or cloning it.
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'load-path "/path/to/mark-mode")
+#+END_SRC
+  Then put the words you want to highlight.
+#+BEGIN_SRC emacs-lisp
+(setq mark-target-keywords '("the" "words" "to" "highlight")
+#+END_SRC
+or add new words instead of replacing
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'mark-target-keywords '("the" "words" "to" "highlight")
+#+END_SRC
 
-* Other changes
-** remove lighter
-I would normally use `diminish', but it is really silly to have any
-highlighter for this mode.
-** call font-lock-fontify-buffer in init
-* WHY U NO PROVIDE JUMP-TO functionality???
-
-Because you should use occur or anything-regexp.
+* There are something missing
+  - JUMP-TO functionality (coming soon)

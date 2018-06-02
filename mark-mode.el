@@ -26,9 +26,6 @@
 
 
 ;;; Commentary:
-;; The is a fork from fic-mode. I just want to read the code to learn to write Elisp.
-;; But after reading, I have a thought to provide more features to it, so I keep this
-;; "Hello, world!".
 
 ;;; Code:
 
@@ -69,8 +66,6 @@
 Checking if face of word in POS is in `mark-activated-faces'."
   (memq (get-char-property pos 'face)
 	mark-activated-faces))
-
-(mark-search-for-keywords nil)
 
 (defun mark-search-for-keywords (limit)
   "Implement according to the variable `font-lock-keywords'.
