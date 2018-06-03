@@ -1,4 +1,4 @@
-;;; mark-mode.el --- Highlight or search the words you want
+;;; mark-mode.el --- Highlight or search the words you want ;; -*- lexical-binding: t -*-
 ;; --------------------------------------------------------
 ;; Copyright (C) 2010, Trey Jackson <bigfaceworm(at)gmail(dot)com>
 ;; Copyright (C) 2010, Ivan Korotkov <twee(at)tweedle-dee(dot)org>
@@ -48,7 +48,7 @@
 
 (defface mark-face
   '((((class color))
-     (:background "white" :foreground "red" :weight bold))
+     (:background "white" :foreground "blue" :weight bold :slant italic))
     (t (:weight blod)))
   "Face to fontify `mark-target-keywords'."
   :group 'mark-mode)
@@ -98,16 +98,53 @@ LIMIT is the bound of BUFFER where you can search words."
 		 (add-to-list 'pos e)))))
 	  (reverse pos))))))
 
-(defun mark--substring-in-position (pos)
-  "Get the whole line in POS."
-  (save-excursion
-    (goto-line (line-number-at-pos pos))
-    (let ((line-content (buffer-substring (line-beginning-position) (line-end-position))))
-      (with-temp-buffer
-	(insert line-content)
-	(buffer-string)))))
+(defun mark--line-in-position (marker)
+  "Get the whole line in location MARKER."
+  (let ((frombuf (marker-buffer marker))
+	(pos (marker-position marker)))
+    (if (not (buffer-live-p frombuf))
+	(message "Buffer %s is not alive"  (buffer-name frombuf))
+      (with-current-buffer frombuf
+	(goto-line (line-number-at-pos pos))
+	(buffer-substring (line-beginning-position) (line-end-position))))))
 
+(defun mark--jump-to (marker)
+  "Jump to the marker."
+  (let ((tobuf (marker-buffer marker))
+	(pos (marker-position marker)))
+    (if (not (buffer-live-p tobuf))
+	(message "Buffer %s is not alive" (buffer-name tobuf))
+      (progn
+	(switch-to-buffer tobuf)
+	(goto-char pos)))))
 
+;; insert all lines into a new read-only buffer
+;; following the doc (info "Clickable Text")
+;; indicates that lines are clickable
+
+(defun mark--write-line-to-buffer (&optional buffer)
+  "Put the captured lines into BUFFER.
+By default, BUFFER is \"*Marked Words*\"."
+  (let* ((oldbuf (current-buffer))
+	 (newbuf (get-buffer-create (or buffer "*Marked Words*")))
+	 (markers (mark--search-marked-keywords oldbuf)))
+	 ;;(lines (mapcar #'mark--line-in-position markers)))
+    (if (with-current-buffer oldbuf
+	  (bound-and-true-p mark-mode))
+	(progn
+	  (with-current-buffer newbuf
+	    (let ((inhibit-read-only t))
+	      (erase-buffer)
+	      (dolist (marker markers)
+		(let ((beg (point)))
+		  (insert (mark--line-in-position marker))
+		  (make-button
+		   beg (point) 'action
+		   ((lambda (mkr) (lambda (x) (mark--jump-to mkr)))
+		    marker)))
+		(insert "\n"))))
+	  (view-buffer (get-buffer newbuf)))
+      (message "Mark mode is disabled in this buffer."))))
 
 ;;;###autoload
 (define-minor-mode mark-mode
